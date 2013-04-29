@@ -1,5 +1,6 @@
 var levelCouchSync = require('level-couch-sync')
 var pad            = require('padded-semver').pad
+var ProgressBar       = require('progress')
 
 module.exports = function (db, config) {
   var packageDb = db.sublevel('pkg')
@@ -11,13 +12,12 @@ module.exports = function (db, config) {
   if(!(config && config.sync))
     return db.sublevel('registry-sync')
 
-  var lastPercentage = 0
   var registrySync
   if(config.sync !== false) {
 
 
 
-    registrySync = 
+    registrySync =
     levelCouchSync(config.registry, db, 'registry-sync', 
     function (data, emit) {
       var doc = data.doc
@@ -77,7 +77,7 @@ module.exports = function (db, config) {
 
         }
       } catch (err) {
-        console.error(doc)
+        console.error('document build error', doc)
         throw err
       }
     })
@@ -85,11 +85,17 @@ module.exports = function (db, config) {
   }
 
   if(config.debug)
-    registrySync.on('progress', function (ratio) {
-      var percentage = Math.floor(ratio*10000)/100
-      if (percentage > lastPercentage) {
-        console.error(percentage)
-        lastPercentage = percentage
-      }
+    registrySync.on('max', function(max){
+
+      var bar         = new ProgressBar('  syncing [:bar] :percent  ', { total: max, width: 100 })
+      var lastCounter = 0
+
+      registrySync.on('progress', function (ratio) {
+        var counter = Math.floor(ratio*max)
+        var delta = counter - lastCounter
+        bar.tick(delta)
+        lastCounter = counter
+      })
     })
+
 }

@@ -11,12 +11,13 @@ var path           = require('path')
 var config = require('rc')('npmd', {
   path: path.join(process.env.HOME, '.npmd'),
   debug: true,
-  sync: false,
+  sync: true,
   encoding: 'json',
   registry: 'http://isaacs.iriscouch.com/registry'
 })
 
-module.exports = function (db) {
+module.exports = function (dbPath) {
+  var db = sublevel(levelup(dbPath, config))
 
   var packageDb = db.sublevel('pkg')
   var versionDb = db.sublevel('ver')
