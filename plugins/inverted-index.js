@@ -8,8 +8,8 @@ module.exports = function (db, config) {
   var i = 0
 
   Inverted(packageDb, indexDb, function (key, value, index) {
-    if(!(i++ % 100))
-      console.error(key)
+//    if(!(i++ % 100))
+//      console.error(key)
     index(value.readme)
     index(value.name)
     index(value.author)
